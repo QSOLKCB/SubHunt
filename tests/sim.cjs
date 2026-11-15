@@ -72,3 +72,23 @@ test('seed sweep keeps state finite and projectile storage bounded',()=>{
     }
   }
 });
+
+test('enemies telegraph once before each attack without changing their firing schedule',()=>{
+  const s=create();let warnings=0,shots=0;
+  s.enemies=[s.enemies[0]];s.enemies[0].reveal=0;s.enemies[0].cooldown=1;
+  for(let i=0;i<59;i++){step(s);warnings+=s.events.filter(e=>e.type==='warning').length;shots+=s.events.filter(e=>e.type==='enemyFire').length;}
+  assert.equal(warnings,1);assert.equal(shots,0);assert.ok(s.enemies[0].reveal>0);
+  advance(s,2);assert.ok(s.projectiles.some(q=>!q.friendly));
+});
+test('campaign counters count fired shots, armour hits, pings and actual hull damage',()=>{
+  const s=quiet(create());step(s,{fire:true,sonar:true});assert.equal(s.stats.shots,1);assert.equal(s.stats.pings,1);
+  advance(s,10,{fire:true,sonar:true});assert.equal(s.stats.shots,1);assert.equal(s.stats.pings,1);
+  s.enemies=[{id:1,x:500,y:300,vx:0,hp:2,maxHp:2,cooldown:100,reveal:0,flash:0}];
+  s.projectiles=[shot(500,300)];step(s);assert.equal(s.stats.hits,1);assert.equal(s.kills,0);
+  s.pulse=null;s.projectiles=[shot(500,SURFACE,false,false),shot(500,SURFACE,false,false)];step(s);assert.equal(s.stats.damageTaken,1);
+  step(s,{x:-1});assert.equal(s.player.facing,-1);step(s,{x:1});assert.equal(s.player.facing,1);
+});
+test('loss reasons distinguish deadline expiry from hull loss',()=>{
+  const timed=quiet(create());timed.timeLeft=0;step(timed);assert.equal(timed.lossReason,'timeout');
+  const hit=quiet(create());hit.player.hp=1;hit.projectiles=[shot(500,SURFACE,false,false)];step(hit);assert.equal(hit.lossReason,'hull');
+});

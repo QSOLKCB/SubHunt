@@ -857,3 +857,76 @@ footer b {
     margin-top:5px;
   }
 }
+
+/* Combat polish and controller setup. */
+.role-brief { font-size:11px; line-height:1.5; color:var(--muted); margin:0 0 13px; }
+.personal-best { display:flex; justify-content:space-between; margin-top:15px; padding-top:12px; border-top:1px solid var(--line); font:9px 'Courier New',monospace; letter-spacing:1px; color:var(--muted); }
+.personal-best b { color:var(--ink); }
+.report-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; border-top:1px solid var(--line); padding:18px 0; }
+.report-grid span { display:block; font:8px 'Courier New',monospace; letter-spacing:1px; color:var(--muted); margin-bottom:5px; }
+.report-grid b { font:700 23px 'Courier New',monospace; }
+.secondary-button { width:100%; border:1px solid #adc1b2; border-radius:3px; background:transparent; color:var(--ink); font-size:10px; font-weight:700; letter-spacing:.6px; padding:12px 9px; margin-top:10px; }
+.secondary-button:hover { background:#dae6d7; }
+.menu-hint { display:block; font-size:9px; line-height:1.6; text-align:center; color:var(--muted); margin-top:13px; }
+.setup-diagram { display:flex; justify-content:space-around; align-items:center; border:1px solid var(--line); border-radius:40px; padding:10px 20px; margin:15px 0; color:var(--ink); background:#dce8d9; font-size:36px; }
+.setup-diagram span:last-child { font-size:19px; letter-spacing:8px; line-height:1.1; color:var(--orange); }
+.controller-card h2 { font-size:29px; line-height:1.15; }
+.controller-card>p { min-height:38px; }
+.controls>.secondary-button { font-size:9px; }
+.battle-readout { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:11px 17px; background:#204b4c; color:#c9e3cb; font:9px 'Courier New',monospace; letter-spacing:.5px; }
+.battle-readout span:first-child { color:#f6c76a; }
+#weapon-status { color:#e6efd5; }
+#ping-status { color:#b9dbae; }
+.console.critical .instrument-bar { box-shadow:inset 0 -3px #f96c42; }
+#timer.urgent { color:#ff9876; }
+.sector-banner { position:absolute; top:40%; left:50%; transform:translate(-50%,-50%); padding:22px; max-width:90%; width:400px; text-align:center; background:#f3f1e8f5; border:1px solid #d6e2d2; border-radius:4px; box-shadow:0 12px 30px #173d402a; }
+.sector-banner>span { display:block; font:10px 'Courier New',monospace; letter-spacing:3px; color:var(--muted); }
+.sector-banner strong { display:block; font-size:22px; margin:12px 0; letter-spacing:-.5px; }
+.sector-banner small { font-size:11px; color:var(--muted); }
+.touch-actions button { position:relative; overflow:hidden; }
+.touch-actions button::after { content:''; position:absolute; bottom:0; left:0; width:var(--charge,100%); height:3px; background:var(--ink); opacity:.55; pointer-events:none; }
+.touch-actions button.recharging { filter:saturate(.65); }
+.touch-actions small { display:block; margin:3px 0 0; font-size:8px; }
+.game-column:fullscreen .viewport { width:min(100%,calc((100dvh - 210px)*1000/580)); }
+@media(max-width:1100px) { .console-bottom>div { gap:13px; } .start-card { padding:18px; } .role-brief { font-size:10px; margin-bottom:10px; } .personal-best { margin-top:11px; padding-top:9px; } }
+@media(max-width:850px) { .battle-readout { font-size:8px; } }
+@media(max-width:500px) {
+  .viewport:has(.overlay:not([hidden])) { min-height:435px; }
+  .start-card { padding:19px 16px; }
+  .start-card h2 { font-size:28px; }
+  .battle-readout { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; font-size:8px; padding:10px 11px; }
+  .battle-readout #vessel-name { grid-column:span 2; }
+  .battle-readout #contacts { text-align:right; }
+  .battle-readout #depth { text-align:right; }
+  .console-bottom>div { justify-content:space-between; width:100%; gap:7px; }
+  .console-bottom button { font-size:8px; }
+  .touch-actions button:last-child { min-width:66px; }
+  .touch-actions button { padding:7px 10px; }
+  .touch-controls .dpad { gap:4px; }
+  .touch-controls button { min-width:36px; }
+  .toast { bottom:13px; padding:8px 12px; font-size:8px; max-width:80%; }
+  .report-grid { gap:12px; padding:14px 0; }
+  .result-card h2 { font-size:27px; }
+  .controller-card h2 { font-size:27px; }
+}
+@media(max-height:600px) and (orientation:landscape) {
+  .game-column:fullscreen { flex-direction:row; gap:8px; padding:5px; }
+  .game-column:fullscreen .console { flex:1; }
+  .game-column:fullscreen .viewport { width:min(100%,calc((100dvh - 135px)*1000/580)); }
+  .game-column:fullscreen .touch-controls { flex-direction:column; justify-content:center; width:155px; }
+  .game-column:fullscreen .dpad { flex-wrap:wrap; justify-content:center; }
+  .game-column:fullscreen .touch-actions { flex-wrap:wrap; }
+  .game-column:fullscreen .touch-actions button { width:100%; }
+  .game-column:fullscreen .viewport:has(.overlay:not([hidden])) { min-height:0; overflow:auto; }
+  .game-column:fullscreen .overlay { position:relative; padding:10px; }
+  .game-column:fullscreen .viewport:has(.overlay:not([hidden])) canvas { display:none; }
+}
+.viewport:has(.overlay:not([hidden])) { min-height:460px; }
+.viewport canvas { object-fit:contain; }
+@media(max-width:500px) {
+  .viewport:has(.overlay:not([hidden])) { min-height:435px; }
+  .instrument-bar { display:grid; grid-template-columns:minmax(0,1fr) auto auto auto; gap:10px; }
+  .instrument-bar>span:not(.live) { display:flex; flex-direction:column; align-items:flex-start; gap:3px; }
+  .instrument-bar b { margin-left:0; white-space:nowrap; }
+  .instrument-bar #hull { font-size:9px; letter-spacing:1px; }
+}
