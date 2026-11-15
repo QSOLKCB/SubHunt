@@ -48,7 +48,11 @@ def run():
         page.wait_for_timeout(100)
         page.keyboard.up("Space")
         assert page.evaluate("subhunt.snapshot().state.projectiles.some(q => q.friendly)")
-        page.keyboard.press("e")
+        # Both edges in one task guarantee that no animation frame can see a held key.
+        page.evaluate("""() => {
+            window.dispatchEvent(new KeyboardEvent('keydown', {code:'KeyE'}));
+            window.dispatchEvent(new KeyboardEvent('keyup', {code:'KeyE'}));
+        }""")
         page.wait_for_function("subhunt.snapshot().state.player.sonar > 0")
         page.screenshot(path=str(ARTIFACTS / "desktop-battle.png"), full_page=True)
         page.keyboard.press("Escape")
@@ -70,13 +74,14 @@ def run():
         assert page.get_by_role("button", name="Mute sound").get_attribute("aria-pressed") == "true"
         page.keyboard.press("Space")
         page.screenshot(path=str(ARTIFACTS / "submarine-battle.png"), full_page=True)
-        # Losing browser focus freezes the operation rather than keeping stale keys held.
-        other = context.new_page()
-        other.goto("about:blank")
+        # Headless Chromium keeps background tabs focused; explicitly exercise its blur handler.
+        page.keyboard.down("ArrowRight")
+        page.evaluate("window.dispatchEvent(new Event('blur'))")
+        page.keyboard.up("ArrowRight")
+        page.wait_for_function("subhunt.snapshot().paused")
+        tick = page.evaluate("subhunt.snapshot().state.tick")
         page.wait_for_timeout(100)
-        assert page.evaluate("subhunt.snapshot().paused")
-        other.close()
-        page.bring_to_front()
+        assert page.evaluate("subhunt.snapshot().state.tick") == tick
         page.get_by_role("button", name="CHANGE VESSEL", exact=True).click()
         # Synthetic standard-layout gamepad: no physical USB device claimed.
         page.evaluate("""() => {
@@ -113,12 +118,21 @@ def run():
             assert page.get_by_role("button", name="LAUNCH OPERATION").is_visible()
             page.screenshot(path=str(ARTIFACTS / f"menu-{width}.png"), full_page=True)
             page.get_by_role("button", name="LAUNCH OPERATION").click()
+            # Both the battle and its controls must fit together without scrolling past instructions.
+            page.evaluate("window.scrollTo(0, 0)")
+            bounds = page.locator(".touch-controls").bounding_box()
+            battle = page.locator("#viewport").bounding_box()
+            assert bounds["y"] - (battle["y"] + battle["height"]) < 90
+            if width <= 768:
+                assert bounds["y"] + bounds["height"] <= height
+                assert battle["y"] >= 0
             bounds = page.get_by_role("button", name="Move right", exact=True).bounding_box()
             page.mouse.move(bounds["x"] + bounds["width"] / 2, bounds["y"] + bounds["height"] / 2)
             page.mouse.down()
             page.wait_for_timeout(250)
             page.mouse.up()
             assert page.evaluate("subhunt.snapshot().state.player.x") > 520
+            page.screenshot(path=str(ARTIFACTS / f"battle-{width}.png"), full_page=True)
         # Direct file launch works without module fetching or a web server.
         page.goto((ROOT / "index.html").as_uri())
         page.get_by_role("button", name="LAUNCH OPERATION").click()

@@ -90,7 +90,7 @@
   $('launch').addEventListener('click',launch);$('again').addEventListener('click',launch);$('change-role').addEventListener('click',menu);$('pause-menu').addEventListener('click',menu);
   $('pause').addEventListener('click',()=>pause());$('resume').addEventListener('click',()=>pause(false));
   $('sound').addEventListener('click',()=>{sound=!sound;updateSound();unlockAudio();tone(500);});
-  $('fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await (matchMedia('(pointer:coarse)').matches?document.documentElement:document.querySelector('.console')).requestFullscreen();}catch{toast('Fullscreen is unavailable in this browser.');}});
+  $('fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.querySelector('.game-column').requestFullscreen();}catch{toast('Fullscreen is unavailable in this browser.');}});
   for(const b of document.querySelectorAll('[data-control]')){
     const down=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);touch.add(b.dataset.control);if(screen==='playing'&&!paused){if(b.dataset.control==='fire')queuedFire=true;if(b.dataset.control==='sonar')queuedSonar=true;}b.classList.add('pressed');unlockAudio();};
     const up=()=>{touch.delete(b.dataset.control);b.classList.remove('pressed');};

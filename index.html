@@ -10,8 +10,9 @@
 <body>
   <main>
     <header class="masthead"><a class="brand" href="./" aria-label="SubHunt home"><span class="brand-mark">≋</span> QSOL–IMC <span class="arcade">/ POCKET ARCADE</span></a><div class="edition"><i></i> BATHTUB THEATRE <span>001</span></div></header>
-    <section class="title-row"><div><div class="eyebrow">THE BATHTUB INCIDENT</div><h1>SUB<span>HUNT</span><b>®</b></h1></div><p>Big trouble.<br><strong>Small ocean.</strong><span>A ship. A sub. Absolutely no room to hide.</span></p></section>
+    <section class="title-row"><div><div class="eyebrow">THE BATHTUB INCIDENT</div><h1>SUB<span>HUNT</span><b aria-hidden="true">✳</b></h1></div><p>Big trouble.<br><strong>Small ocean.</strong><span>A ship. A sub. Absolutely no room to hide.</span></p></section>
     <div class="game-layout">
+      <div class="game-column">
       <section class="console" aria-label="Game">
         <div class="instrument-bar"><span class="live"><i></i> <span id="status">AWAITING CAPTAIN</span></span><span>HULL <b id="hull">● ● ● ● ●</b></span><span>TIME <b id="timer">01:35</b></span><span class="score">SCORE <b id="score">000000</b></span></div>
         <div class="viewport" id="viewport">
@@ -29,12 +30,13 @@
         </div>
         <div class="console-bottom"><span><i></i> <span id="mission">MISSION 01 / RUBBER DUCK RECONNAISSANCE</span></span><div><button id="sound" aria-pressed="false" aria-label="Enable sound">SOUND OFF</button><button id="pause" disabled>PAUSE Ⅱ</button><button id="fullscreen" aria-label="Toggle fullscreen">EXPAND ⤢</button></div></div>
       </section>
+    <section class="touch-controls" aria-label="Touch controls"><div class="dpad"><button data-control="up" aria-label="Move up">▲</button><button data-control="left" aria-label="Move left">◀</button><button data-control="down" aria-label="Move down">▼</button><button data-control="right" aria-label="Move right">▶</button></div><div class="touch-actions"><button data-control="sonar">PING <small id="sonar-time">READY</small></button><button data-control="fire">FIRE <span>●</span></button></div></section>
+      </div>
       <aside>
         <section class="briefing"><div class="section-no">01 — FIELD NOTES</div><h2>Naval warfare.<br>Domestic scale.</h2><p>The bath toys have mutinied. Take command, find the rival fleet, and restore peace to the porcelain.</p><div class="rule"><span>◎</span><p><strong>Ping. Find. Fire.</strong>Sonar reveals hidden subs and clears incoming weapons around you.</p></div><div class="rule"><span>♧</span><p><strong>Mind the ducks.</strong>Rubber ducks block rising torpedoes. Thread your shots through the gaps.</p></div><div class="rule"><span>↻</span><p><strong>Fear the plughole.</strong>The final sector has a drain current. Keep an eye on your depth.</p></div></section>
         <section class="controls"><div class="section-no">02 — CAPTAIN'S CONTROLS</div><div><span>Steer / dive</span><b><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></b></div><div><span>Fire / drop</span><kbd>SPACE</kbd></div><div><span>Sonar pulse</span><kbd>E</kbd></div><div><span>Pause</span><kbd>ESC</kbd></div><p>Arrow keys also work. Gamepad: D-pad / left stick, A to fire, B to ping, Start to pause.</p><span id="pad-status" class="pad-status">○ GAMEPAD READY TO CONNECT</span></section>
       </aside>
     </div>
-    <section class="touch-controls" aria-label="Touch controls"><div class="dpad"><button data-control="up" aria-label="Move up">▲</button><button data-control="left" aria-label="Move left">◀</button><button data-control="down" aria-label="Move down">▼</button><button data-control="right" aria-label="Move right">▶</button></div><div class="touch-actions"><button data-control="sonar">PING <small id="sonar-time">READY</small></button><button data-control="fire">FIRE <span>●</span></button></div></section>
     <footer><span>A LITTLE OCEAN. A LOT OF ATTITUDE.</span><span>BUILT BY QSOL–IMC <b>✳</b> <a href="https://github.com/QSOLKCB/SubHunt" target="_blank" rel="noopener">SOURCE ↗</a></span></footer>
   </main>
 </body></html>
