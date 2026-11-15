@@ -20,6 +20,8 @@ jobs:
           node --check js/controller.js
           node --check js/render.js
           node --check js/app.js
+          node --check js/music.js
+          node --check vendor/vanillajs/audio2d.js
           node --check sw.js
           node --test tests/*.cjs
   browser:

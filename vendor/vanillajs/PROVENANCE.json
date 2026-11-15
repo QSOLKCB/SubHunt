@@ -1,0 +1,14 @@
+{
+  "repository": "QSOLKCB/VANILLAJS",
+  "commit": "ac69cde61dcc5feb40ff138e69830c80b903a8e6",
+  "path": "modules/audio2d/index.js",
+  "blob": "698d2cf9238999cbd6dfd50010c7ba3e49bc5e3a",
+  "license": "Apache-2.0",
+  "sourceSHA256": "07e19391b84034acba56ef840a4d622b70e815f5376de123b6a07a9ccebf3098",
+  "adapter": "Remove export keywords and wrap in a classic-script IIFE exposing SubHuntAudio2D. Synthesis unchanged.",
+  "inspiration": [
+    "docs/CREATOR_GUIDE.md",
+    "demos/creator-hub/index.html",
+    "demos/soundtrack-lab/index.html"
+  ]
+}
