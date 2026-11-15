@@ -92,7 +92,7 @@
     hud(); $('launch').focus();
   }
   function pause(value=!paused) {
-    if (screen !== 'playing') return;
+    if (screen !== 'playing' || calibration) return;
     paused = value; clearInput(); accumulator = 0; overlay(paused ? 'pause-card' : null);
     $('pause').textContent = paused ? 'RESUME ▷' : 'PAUSE Ⅱ'; hud();
     if (paused) $('resume').focus(); else document.activeElement?.blur();
@@ -132,6 +132,8 @@
   }
   function hud() {
     const p = state.player, seconds = Math.ceil(state.timeLeft);
+    $('pause').disabled = screen !== 'playing' || !!calibration;
+    $('pause').textContent = paused ? 'RESUME ▷' : 'PAUSE Ⅱ';
     $('status').textContent = screen === 'menu' ? 'AWAITING CAPTAIN' : paused ? 'HOLDING POSITION' :
       state.status === 'won' ? 'TUB SECURED' : state.status === 'lost' ? (state.lossReason === 'timeout' ? 'TIME EXPIRED' : 'VESSEL LOST') : state.transition > 0 ? 'SECTOR SECURED' : 'OPERATION LIVE';
     $('hull').textContent = Array.from({length:5}, (_,i) => i < p.hp ? '●' : '○').join(' ');

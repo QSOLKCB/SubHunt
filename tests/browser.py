@@ -75,6 +75,16 @@ def controller_checks(page):
     page.wait_for_timeout(250)
     page.evaluate("testPad.axes[2]=0")
     assert page.evaluate("subhunt.snapshot().state.player.x") > x + 20
+    page.get_by_role("button", name="CONTROLLER SETUP", exact=True).click()
+    assert page.evaluate("subhunt.snapshot().paused && subhunt.snapshot().calibration !== null")
+    assert not page.locator("#pause").is_enabled()
+    tick = page.evaluate("subhunt.snapshot().state.tick")
+    page.wait_for_timeout(100)
+    assert page.evaluate("subhunt.snapshot().state.tick") == tick
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(80)
+    press(3)
+    page.wait_for_function("!subhunt.snapshot().paused")
     press(0)
     assert page.evaluate("subhunt.snapshot().state.stats.pings") > 0
     press(7)
