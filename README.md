@@ -119,6 +119,9 @@ Open http://localhost:8001. Once the first page load and asset cache finish, it 
 node --test tests/*.cjs
 uvx --from playwright==1.56.0 playwright install chromium
 uv run --no-project --with playwright==1.56.0 python tests/browser.py
+# Test the same package published by Pages (including vendored audio):
+sh scripts/stage-pages.sh
+SUBHUNT_WEB_ROOT=public uv run --no-project --with playwright==1.56.0 python tests/browser.py
 ```
 
 Node is used only to execute JavaScript regression tests. Playwright is an isolated development dependency managed by uv; the browser game ships no dependencies. Set CHROMIUM_PATH to use an existing Chromium executable. Browser screenshots are written to build/ and uploaded as CI evidence.
@@ -130,6 +133,8 @@ After an update, an older open game tab may keep its existing offline worker unt
 ## Deployment and layout
 
 Every main push runs verification. A successful push run triggers Pages deployment of that **exact verified commit**. Set the repository's Pages source to **GitHub Actions**. Pull requests run checks and produce screenshots without deploying.
+
+Verification and deployment use the same `scripts/stage-pages.sh` package, including the vendored audio renderer and its licence/provenance. CI plays the staged package, tests offline reload and WAV downloads, and checks that both modes and vessels keep moving if the soundtrack asset fails to load. A music failure temporarily switches music off and shows a retry notice; combat continues and the saved preference is preserved.
 
 | Path | Responsibility |
 |---|---|

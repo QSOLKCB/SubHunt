@@ -23,12 +23,7 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
       - name: Stage runtime files only
-        run: |
-          mkdir -p public/js public/assets
-          cp index.html style.css sw.js public/
-          cp js/*.js public/js/
-          cp assets/*.svg public/assets/
-          touch public/.nojekyll
+        run: sh scripts/stage-pages.sh
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

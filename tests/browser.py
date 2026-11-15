@@ -7,8 +7,10 @@ from threading import Thread
 import os
 from playwright.sync_api import sync_playwright
 from browser_upgrades import checks as upgrade_checks
+from browser_music_failure import checks as music_failure_checks
 
 ROOT = Path(__file__).resolve().parents[1]
+WEB_ROOT = Path(os.environ.get('SUBHUNT_WEB_ROOT', ROOT)).resolve()
 ARTIFACTS = ROOT / "build"
 
 class QuietHandler(SimpleHTTPRequestHandler):
@@ -17,7 +19,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 @contextmanager
 def serve():
-    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(ROOT)))
+    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(WEB_ROOT)))
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
@@ -376,11 +378,12 @@ def run():
             assert page.evaluate("subhunt.snapshot().state.player.x") > 520, f"touch movement at {width}px"
             page.screenshot(path=str(ARTIFACTS / f"battle-{width}.png"), full_page=True)
         # Direct file launch works without module fetching or a web server.
-        page.goto((ROOT / "index.html").as_uri())
+        page.goto((WEB_ROOT / "index.html").as_uri())
         page.get_by_role("button", name="LAUNCH OPERATION").click()
         page.wait_for_function("subhunt.snapshot().state.tick > 3")
         result_checks(browser, url)
         upgrade_checks(browser, url, ARTIFACTS)
+        music_failure_checks(browser, url, ARTIFACTS)
         reduced = browser.new_context(reduced_motion="reduce")
         calm = reduced.new_page()
         calm.goto(url)
@@ -398,7 +401,7 @@ def run():
         calm.wait_for_function("subhunt.snapshot().effects")
         reduced.close()
         assert not errors, errors
-        print("PASS: both roles, keyboard/touch, quick taps, pause, preferences, default/custom USB pads, nine-step calibration/cancel/persistence, reconnect, reports, Pond Panic, powers, difficulty, music pause/mute, WAV hashes, reduced motion, offline and file://")
+        print("PASS: both roles, keyboard/touch, quick taps, pause, preferences, default/custom USB pads, nine-step calibration/cancel/persistence, reconnect, reports, Pond Panic, powers, difficulty, music pause/mute/failure recovery, WAV hashes, reduced motion, offline and file://; web root: " + str(WEB_ROOT))
         browser.close()
 
 if __name__ == "__main__":
