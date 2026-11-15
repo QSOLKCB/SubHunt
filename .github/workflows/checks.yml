@@ -17,10 +17,11 @@ jobs:
       - name: Check JavaScript and run deterministic combat tests
         run: |
           node --check js/sim.js
+          node --check js/controller.js
           node --check js/render.js
           node --check js/app.js
           node --check sw.js
-          node --test tests/sim.cjs
+          node --test tests/*.cjs
   browser:
     runs-on: ubuntu-24.04
     steps:
