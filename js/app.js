@@ -4,7 +4,7 @@
   const $ = id => document.getElementById(id);
   const {create, step, STEP, MISSIONS, clamp} = SubHunt;
   const draw = SubHuntRenderer($('game'));
-  const keys = new Set(), touch = new Set(), pointers = new Map();
+  const keys = new Set(), touch = new Set(), pointers = new Map(), sessionProfiles = new Set();
   const Controller = SubHuntController;
   const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
   const neutral = () => ({x:0, y:0, fire:false, sonar:false});
@@ -28,7 +28,7 @@
     if (typeof saved?.effects === 'boolean') { effects = saved.effects; effectsOverride = true; }
   } catch { /* Storage is optional, including in file mode. */ }
   function savePreferences() {
-    try { localStorage.setItem('subhunt-preferences-v1', JSON.stringify({sound, effects})); } catch {}
+    try { localStorage.setItem('subhunt-preferences-v1', JSON.stringify({sound, ...(effectsOverride ? {effects} : {})})); } catch {}
   }
   function tone(frequency, duration=.12, type='sine', volume=.05, slide=0, delay=0) {
     if (!sound || !audio) return;
@@ -88,7 +88,7 @@
   }
   function menu() {
     screen = 'menu'; paused = false; clearInput(); state = create(role); draw.reset();
-    overlay('start-card'); $('pause').disabled = true; $('toast').classList.remove('visible'); toastTime = 0;
+    overlay('start-card'); $('pause').disabled = true; $('pause').textContent = 'PAUSE Ⅱ'; $('toast').classList.remove('visible'); toastTime = 0;
     hud(); $('launch').focus();
   }
   function pause(value=!paused) {
@@ -99,6 +99,7 @@
   }
   function finish() {
     screen = 'result'; clearInput(); overlay('result-card'); $('pause').disabled = true;
+    $('toast').classList.remove('visible'); toastTime = 0;
     const won = state.status === 'won', newBest = state.score > highScore;
     highScore = Math.max(highScore, state.score);
     try { localStorage.setItem('subhunt-best-v1', String(highScore)); } catch {}
@@ -132,7 +133,7 @@
   function hud() {
     const p = state.player, seconds = Math.ceil(state.timeLeft);
     $('status').textContent = screen === 'menu' ? 'AWAITING CAPTAIN' : paused ? 'HOLDING POSITION' :
-      state.status === 'won' ? 'TUB SECURED' : state.status === 'lost' ? 'VESSEL LOST' : state.transition > 0 ? 'SECTOR SECURED' : 'OPERATION LIVE';
+      state.status === 'won' ? 'TUB SECURED' : state.status === 'lost' ? (state.lossReason === 'timeout' ? 'TIME EXPIRED' : 'VESSEL LOST') : state.transition > 0 ? 'SECTOR SECURED' : 'OPERATION LIVE';
     $('hull').textContent = Array.from({length:5}, (_,i) => i < p.hp ? '●' : '○').join(' ');
     $('hull').setAttribute('aria-label', p.hp + ' of 5 hull points');
     $('timer').textContent = String(Math.floor(seconds / 60)).padStart(2,'0') + ':' + String(seconds % 60).padStart(2,'0');
@@ -169,7 +170,7 @@
       profileIdentity = id;
       activeProfile = profiles.find(p => p.id === id)?.profile || Controller.freshDefault();
     }
-    $('controller-profile').textContent = profiles.some(p => p.id === id) ? 'Custom USB mapping saved for this controller' : 'Default map · USB SNES pads can be remapped';
+    $('controller-profile').textContent = profiles.some(p => p.id === id) ? (sessionProfiles.has(id) ? 'Custom USB mapping active for this session' : 'Custom USB mapping saved for this controller') : 'Default map · USB SNES pads can be remapped';
     $('controller-profile').title = pad.id;
   }
   function openSetup() {
@@ -196,7 +197,8 @@
   function saveController() {
     profiles = profiles.filter(p => p.id !== profileIdentity);
     profiles.push({id:profileIdentity, profile:activeProfile}); profiles = profiles.slice(-8);
-    try { localStorage.setItem('subhunt-controllers-v1', JSON.stringify(profiles)); } catch {}
+    try { localStorage.setItem('subhunt-controllers-v1', JSON.stringify(profiles)); sessionProfiles.delete(profileIdentity); return true; }
+    catch { sessionProfiles.add(profileIdentity); return false; }
   }
   function calibrate(pad, dt) {
     if (!calibration.id) { calibration.id = identify(pad); calibration.baseline = Array.from(pad.axes); }
@@ -209,8 +211,8 @@
       calibration.waiting = false;
       if (calibration.index === Controller.STEPS.length) {
         if (Controller.valid(calibration.draft)) {
-          activeProfile = calibration.draft; profileIdentity = identify(pad); saveController();
-          closeSetup(); toast('Controller ready. Your USB mapping is saved on this browser.'); useProfile(pad);
+          activeProfile = calibration.draft; profileIdentity = identify(pad); const saved = saveController();
+          closeSetup(); toast(saved ? 'Controller ready. Your USB mapping is saved on this browser.' : 'Controller ready for this session. Browser storage is unavailable.'); useProfile(pad);
         } else { calibration.index = 0; calibration.draft = {version:1, buttons:{}, directions:{}}; setupLabel('Mapping could not be validated. Please start again.'); }
       } else setupLabel();
       return;

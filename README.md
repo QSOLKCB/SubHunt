@@ -32,7 +32,7 @@ The bath toys have mutinied. A tiny patrol boat and a fleet of miniature submari
 |---|---|---|---|
 | Steer / dive | WASD or arrows | D-pad / left stick | Direction buttons |
 | Fire / drop | Space | A / button 0; X / button 2 | FIRE |
-| Sonar | E | B / button 1; Y / button 3 | PING |
+| Sonar | E | B / button 1 (remappable) | PING |
 | Pause / resume | Escape or P | Start / button 9 | PAUSE / RESUME |
 
 In the vessel menu, use gamepad left/right to choose a role, A or Start to launch, and Select to open controller setup. While paused: A resumes, B or Select returns to vessel selection, X restarts the campaign, and Start resumes. A disconnected active controller pauses the game; release its controls after reconnecting before resuming. R restarts from pause or the results screen. Sound starts muted; enable it with SOUND OFF. Sound and visual-effects preferences are saved locally. CALM FX disables decorative motion, shake and particle bursts; it follows your reduced-motion system preference until you choose a setting. Browser focus loss automatically pauses play. Controller layouts vary, especially unlabelled USB SNES adapters; the baseline uses axes 0/1, D-pad buttons 12–15, and button indices shown above. Physical controller compatibility must be checked on the actual device.

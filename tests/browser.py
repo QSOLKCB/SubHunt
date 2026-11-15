@@ -290,6 +290,13 @@ def run():
         calm.keyboard.press("Space")
         calm.wait_for_function("subhunt.snapshot().state.stats.shots > 0")
         calm.screenshot(path=str(ARTIFACTS / "reduced-effects.png"), full_page=True)
+        calm.get_by_role("button", name="Enable sound").click()
+        # Changing sound alone must not override the system's effects preference.
+        calm.reload()
+        calm.wait_for_function("typeof subhunt !== 'undefined'")
+        assert calm.get_by_role("button", name="Mute sound").get_attribute("aria-pressed") == "true"
+        calm.emulate_media(reduced_motion="no-preference")
+        calm.wait_for_function("subhunt.snapshot().effects")
         reduced.close()
         assert not errors, errors
         print("PASS: both roles, keyboard/touch, quick taps, pause, preferences, default/custom USB pads, nine-step calibration/cancel/persistence, reconnect, reports, reduced motion, offline and file://")
