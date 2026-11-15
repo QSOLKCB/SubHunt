@@ -5,6 +5,7 @@
   const draw=SubHuntRenderer($('game')), keys=new Set(), touch=new Set();
   let role='boat',state=create(role),screen='menu',paused=false,last=0,accumulator=0,visualTime=0,toastTime=0,padPause=false,padMenuFire=false;
   let sound=false,audio=null,highScore=0;
+  let queuedFire=false,queuedSonar=false;
   try{highScore=Number(localStorage.getItem('subhunt-best-v1'))||0;}catch{}
   function tone(frequency,duration=.12,type='sine',volume=.05,slide=0){
     if(!sound||!audio)return;
@@ -21,7 +22,7 @@
   function toast(message){$('toast').textContent=message;$('toast').classList.add('visible');toastTime=2.8;}
   function overlay(card){$('overlay').hidden=!card;for(const id of ['start-card','result-card','pause-card'])$(id).hidden=id!==card;}
   function selectRole(next){role=next;for(const r of ['boat','sub']){$('role-'+r).classList.toggle('selected',r===role);$('role-'+r).setAttribute('aria-pressed',String(r===role));}state=create(role);hud();}
-  function clearInput(){keys.clear();touch.clear();document.querySelectorAll('[data-control]').forEach(b=>b.classList.remove('pressed'));}
+  function clearInput(){keys.clear();touch.clear();queuedFire=false;queuedSonar=false;document.querySelectorAll('[data-control]').forEach(b=>b.classList.remove('pressed'));}
   function launch(){
     unlockAudio();clearInput();state=create(role);screen='playing';paused=false;accumulator=0;draw.reset();overlay(null);$('pause').disabled=false;$('pause').textContent='PAUSE Ⅱ';
     toast(role==='boat'?'Drop charges above contacts. E to reveal subs.':'Dodge charges. Fire upward through gaps in the ducks.');hud();$('launch').blur();
@@ -75,12 +76,12 @@
   function input(pad){
     const has=(...names)=>names.some(k=>keys.has(k)||touch.has(k));
     return {x:SubHunt.clamp((has('ArrowRight','KeyD','right')?1:0)-(has('ArrowLeft','KeyA','left')?1:0)+pad.x,-1,1),
-      y:SubHunt.clamp((has('ArrowDown','KeyS','down')?1:0)-(has('ArrowUp','KeyW','up')?1:0)+pad.y,-1,1),fire:has('Space','fire')||pad.fire,sonar:has('KeyE','sonar')||pad.sonar};
+      y:SubHunt.clamp((has('ArrowDown','KeyS','down')?1:0)-(has('ArrowUp','KeyW','up')?1:0)+pad.y,-1,1),fire:has('Space','fire')||pad.fire||queuedFire,sonar:has('KeyE','sonar')||pad.sonar||queuedSonar};
   }
   const gameplayKeys=['ArrowRight','ArrowLeft','ArrowUp','ArrowDown','KeyW','KeyA','KeyS','KeyD','Space','KeyE'];
   window.addEventListener('keydown',e=>{
     if(e.code==='Escape'||e.code==='KeyP'){if(!e.repeat)pause();return;}
-    if(screen==='playing'&&!paused&&gameplayKeys.includes(e.code)){e.preventDefault();keys.add(e.code);unlockAudio();}
+    if(screen==='playing'&&!paused&&gameplayKeys.includes(e.code)){e.preventDefault();keys.add(e.code);if(e.code==='Space')queuedFire=true;if(e.code==='KeyE')queuedSonar=true;unlockAudio();}
   });
   window.addEventListener('keyup',e=>keys.delete(e.code));
   window.addEventListener('blur',()=>{clearInput();if(screen==='playing')pause(true);});
@@ -91,14 +92,14 @@
   $('sound').addEventListener('click',()=>{sound=!sound;updateSound();unlockAudio();tone(500);});
   $('fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await (matchMedia('(pointer:coarse)').matches?document.documentElement:document.querySelector('.console')).requestFullscreen();}catch{toast('Fullscreen is unavailable in this browser.');}});
   for(const b of document.querySelectorAll('[data-control]')){
-    const down=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);touch.add(b.dataset.control);b.classList.add('pressed');unlockAudio();};
+    const down=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);touch.add(b.dataset.control);if(screen==='playing'&&!paused){if(b.dataset.control==='fire')queuedFire=true;if(b.dataset.control==='sonar')queuedSonar=true;}b.classList.add('pressed');unlockAudio();};
     const up=()=>{touch.delete(b.dataset.control);b.classList.remove('pressed');};
     b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up);
   }
   function frame(now){
     const dt=Math.min((now-(last||now))/1000,.1);last=now;const pad=gamepad();
     if(!paused){visualTime+=dt;if(toastTime>0){toastTime-=dt;if(toastTime<=0)$('toast').classList.remove('visible');}}
-    if(screen==='playing'&&!paused){accumulator+=dt;const controls=input(pad);while(accumulator>=STEP&&state.status==='playing'){step(state,controls);events();accumulator-=STEP;}if(state.status!=='playing')finish();hud();}
+    if(screen==='playing'&&!paused){queuedFire ||= pad.fire;queuedSonar ||= pad.sonar;accumulator+=dt;const controls=input(pad);while(accumulator>=STEP&&state.status==='playing'){step(state,controls);queuedFire=false;queuedSonar=false;events();accumulator-=STEP;}if(state.status!=='playing')finish();hud();}
     draw.draw(state,visualTime,paused?0:dt);requestAnimationFrame(frame);
   }
   // A read-only snapshot is useful for bug reports and browser regression checks.

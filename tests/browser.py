@@ -49,7 +49,7 @@ def run():
         page.keyboard.up("Space")
         assert page.evaluate("subhunt.snapshot().state.projectiles.some(q => q.friendly)")
         page.keyboard.press("e")
-        assert page.evaluate("subhunt.snapshot().state.player.sonar") > 0
+        page.wait_for_function("subhunt.snapshot().state.player.sonar > 0")
         page.screenshot(path=str(ARTIFACTS / "desktop-battle.png"), full_page=True)
         page.keyboard.press("Escape")
         tick = page.evaluate("subhunt.snapshot().state.tick")
