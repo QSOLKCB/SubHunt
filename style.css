@@ -930,3 +930,57 @@ footer b {
   .instrument-bar b { margin-left:0; white-space:nowrap; }
   .instrument-bar #hull { font-size:9px; letter-spacing:1px; }
 }
+
+/* Supply crates and the captain's challenge selector. */
+.difficulties { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
+.difficulties button { border:1px solid #aabbad; border-radius:3px; background:transparent; color:var(--ink); padding:9px 3px; font:700 9px 'Courier New',monospace; letter-spacing:.5px; }
+.difficulties button.selected { background:var(--ink); color:var(--paper); }
+.start-card .difficulty-description { font:9px 'Courier New',monospace; line-height:1.5; margin:7px 0 11px; min-height:14px; }
+.start-card h2 { font-size:30px; margin:9px 0; }
+.start-card>p { margin-bottom:12px; }
+.start-card { padding:21px; }
+.power-readout { display:flex; align-items:center; gap:12px; min-height:29px; padding:6px 17px; background:#123c3d; color:#e2d3a7; font:8px 'Courier New',monospace; }
+.power-readout b { color:#b9dbae; }
+.power-readout span { line-height:1.5; }
+.soundtrack-panel { border-top:1px solid var(--line); padding-top:18px; margin-top:20px; }
+.soundtrack-panel strong { font-size:16px; }
+.soundtrack-panel p { font-size:11px; line-height:1.6; color:var(--muted); }
+.viewport:has(.overlay:not([hidden])) { min-height:510px; }
+.console-bottom>div { gap:12px; }
+.game-column:fullscreen .viewport { width:min(100%,calc((100dvh - 240px)*1000/580)); }
+@media(max-width:850px) { aside { grid-template-columns:1fr 1fr; } .controls { grid-column:2; grid-row:1 / span 2; } }
+@media(max-width:500px) {
+  .viewport:has(.overlay:not([hidden])) { min-height:495px; }
+  .start-card { padding:17px 13px; }
+  .start-card h2 { font-size:27px; }
+  .power-readout { padding:5px 10px; gap:8px; font-size:7px; }
+  .console-bottom>div { gap:7px; }
+  aside { grid-template-columns:1fr; } .controls { grid-column:auto; grid-row:auto; }
+}
+@media(max-height:600px) and (orientation:landscape) {
+  .game-column:fullscreen .viewport:has(.overlay:not([hidden])) { min-height:0; }
+}
+
+.play-modes { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin:12px 0 8px; }
+.play-modes button { padding:10px 4px; border:1px solid var(--ink); border-radius:3px; background:transparent; color:var(--ink); font:700 10px 'Courier New',monospace; }
+.play-modes button.selected { background:var(--orange); border-color:var(--orange); }
+.start-card #mode-description { font-size:10px; min-height:28px; margin-bottom:8px; }
+.race-readout { display:flex; justify-content:space-between; align-items:center; gap:6px; padding:9px 15px; color:#f6efcf; background:#295e59; font:9px 'Courier New',monospace; }
+.race-readout b { font-size:18px; color:#f8cd75; margin:0 6px; }
+#race-left { text-align:center; font-size:8px; }
+.viewport:has(.overlay:not([hidden])) { min-height:590px; }
+@media(max-width:500px) {
+  .viewport:has(.overlay:not([hidden])) { min-height:565px; }
+  .race-readout { padding:6px 9px; }
+  #race-left { font-size:7px; }
+}
+@media(max-height:600px) and (orientation:landscape) { .game-column:fullscreen .viewport:has(.overlay:not([hidden])) { min-height:0; } }
+
+.race-readout { background:#295e59; }
+@media(max-width:500px) {
+  .battle-readout { padding:7px 10px; gap:4px; }
+  .power-readout { min-height:24px; }
+  .console-bottom { min-height:43px; padding:6px 10px; gap:6px; }
+  .race-readout { padding:5px 9px; }
+  .race-readout b { font-size:13px; }
+}

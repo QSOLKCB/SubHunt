@@ -53,7 +53,7 @@ test('both sides can clear three missions, repair, score and reach a frozen vict
       // Place stationary targets in a clear firing lane; use actual travelling weapons.
       s.enemies.forEach(e=>{e.x=500;e.y=role==='boat'?300:SURFACE;});
       for(let i=0;i<1500&&s.enemies.length;i++)step(s,{fire:true});
-      assert.equal(s.enemies.length,0);if(mission<2){advance(s,160);assert.equal(s.player.hp,Math.min(5,4+mission));}
+      assert.equal(s.enemies.length,0);if(mission<2){const hp=s.player.hp;advance(s,160);assert.equal(s.player.hp,Math.min(5,hp+1));}
     }
     assert.equal(s.kills,12);assert.equal(s.status,'won');assert.ok(s.score>2000);const frozen=JSON.stringify(s);advance(s,60,{fire:true});assert.equal(JSON.stringify(s),frozen);
   }

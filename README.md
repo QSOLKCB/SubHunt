@@ -16,7 +16,7 @@
 
 </div>
 
-The bath toys have mutinied. A tiny patrol boat and a fleet of miniature submarines are fighting for control of the porcelain. Choose a side, thread your shots past rubber ducks, and survive three increasingly chaotic missions.
+The bath toys have mutinied. A tiny patrol boat and a fleet of miniature submarines are fighting for control of the porcelain. Choose a side, collect salvage, and survive three increasingly chaotic missions—or race the fleet to catch bath toys that have come to life.
 
 ## Two sides of the tub
 
@@ -25,6 +25,61 @@ The bath toys have mutinied. A tiny patrol boat and a fleet of miniature submari
 - **Sonar:** reveals every contact for four seconds and clears hostile weapons inside its expanding ring. Recharges in seven seconds.
 - **Campaign:** Rubber Duck Reconnaissance → Trouble in the Bubble Bank → Operation: Pull the Plug. Enemy firing markers telegraph attacks before launch. The last sector adds armoured enemies and a drain current. Clear a sector to repair one hull point. Finish all three before losing your five hull points or running out of sector time.
 - **Arcade atmosphere:** a hand-drawn procedural bathtub, sponge reef, toy star, tap, sonar scope, bubble trails, quacks and synthesised weapon sounds. No downloaded art, sound files, trackers or remote services.
+
+## Choose your operation
+
+**Fleet Hunt** keeps the naval campaign: destroy the rival fleet in each sector.
+**Pond Panic** adds a competitive toy hunt: five ducks paddle on the surface and
+six fish swim underwater. The first side to destroy six of the eleven wins the
+sector. Win three sectors to finish the operation. Your rival fleet leads its
+shots at moving toys; every AI point comes from a real projectile collision.
+You can still sink rivals, dodge their weapons, and use sonar to deny them shots.
+Hull loss or running out of time still ends the operation. The race resets each
+sector; the report counts all toys claimed by both sides.
+
+| Difficulty | Sector time | Enemy movement | Firing interval | Score |
+|---|---:|---:|---:|---:|
+| Cadet | 120 seconds | ×0.75 | ×1.35 (slower attacks) | ×0.75 |
+| Captain | 95 seconds | ×1 | ×1 | ×1 |
+| Admiral | 80 seconds | ×1.25 | ×0.75 (faster attacks) | ×1.5 |
+
+Choose mode, vessel and difficulty before launching. Mode/difficulty are saved;
+restarts preserve both. Best scores are separate for each mode/difficulty, with
+the original Captain fleet record retained. All modes start with five hull points.
+Score multipliers round down to whole points per award.
+
+## Salvage power-ups
+
+Touch a supply crate with your vessel to collect it. Its shrinking ring shows
+how long remains before it expires. Supplies arrive after six seconds and every
+fifteen seconds thereafter, plus every second enemy sink or player toy claim.
+Their locations use a separate seeded stream. Boat supplies float at the
+surface; submarine supplies stay at reachable depths. At most four are present.
+
+| Crate | Effect |
+|---|---|
+| **+ Hull patch** | Repair one hull point; at full hull, award 50 points before the difficulty multiplier |
+| **O Bubble shield** | Block one damaging shot within 12 seconds, with a short immunity window |
+| **R Rapid fire** | 8 seconds of faster weapon reloads |
+| **3 Triple shot** | 8 seconds of three diverging projectiles per shot; combines with rapid fire |
+
+Collecting a timed boost again refreshes its duration. Boosts and uncollected
+supplies reset on sector entry. Their timers use simulation ticks and freeze on
+pause. Each projectile counts toward accuracy, including all three volley shots.
+
+## Bath Time Radio
+
+Three original four-channel chip themes accompany the three sectors. Enable
+**SOUND** to listen; **MUSIC** toggles the score separately from weapon effects.
+The score follows the simulation tick and resumes from that position after a
+pause. **DOWNLOAD SECTOR WAV** exports the current sector's complete loop.
+
+Music is rendered locally to deterministic 48 kHz mono PCM16 using a pinned copy
+of VANILLAJS audio2d, with a classic-script adapter for direct file opening. No
+streaming, build step, npm runtime or remote audio. The generated WAVs have
+matching Node/Chromium SHA-256 receipts; device playback may resample. See
+[the soundtrack contract and hashes](docs/SOUNDTRACK.md) and
+[source provenance](vendor/vanillajs/PROVENANCE.json).
 
 ## Controls
 
@@ -35,7 +90,7 @@ The bath toys have mutinied. A tiny patrol boat and a fleet of miniature submari
 | Sonar | E | B / button 1 (remappable) | PING |
 | Pause / resume | Escape or P | Start / button 9 | PAUSE / RESUME |
 
-In the vessel menu, use gamepad left/right to choose a role, A or Start to launch, and Select to open controller setup. While paused: A resumes, B or Select returns to vessel selection, X restarts the campaign, and Start resumes. A disconnected active controller pauses the game; release its controls after reconnecting before resuming. R restarts from pause or the results screen. Sound starts muted; enable it with SOUND OFF. Sound and visual-effects preferences are saved locally. CALM FX disables decorative motion, shake and particle bursts; it follows your reduced-motion system preference until you choose a setting. Browser focus loss automatically pauses play. Controller layouts vary, especially unlabelled USB SNES adapters; the baseline uses axes 0/1, D-pad buttons 12–15, and button indices shown above. Physical controller compatibility must be checked on the actual device.
+In the vessel menu, use gamepad left/right to choose a role, up/down to choose difficulty, B to switch Fleet Hunt/Pond Panic, A or Start to launch, and Select to open controller setup. While paused: A resumes, B or Select returns to vessel selection, X restarts the campaign, and Start resumes. A disconnected active controller pauses the game; release its controls after reconnecting before resuming. R restarts from pause or the results screen. Sound starts muted; enable it with SOUND OFF. Sound, music and visual-effects preferences are saved locally. CALM FX disables decorative motion, shake and particle bursts; it follows your reduced-motion system preference until you choose a setting. Browser focus loss automatically pauses play. Controller layouts vary, especially unlabelled USB SNES adapters; the baseline uses axes 0/1, D-pad buttons 12–15, and button indices shown above. Physical controller compatibility must be checked on the actual device.
 
 ## Generic USB SNES controllers on Linux Chrome
 
@@ -68,7 +123,7 @@ uv run --no-project --with playwright==1.56.0 python tests/browser.py
 
 Node is used only to execute JavaScript regression tests. Playwright is an isolated development dependency managed by uv; the browser game ships no dependencies. Set CHROMIUM_PATH to use an existing Chromium executable. Browser screenshots are written to build/ and uploaded as CI evidence.
 
-The simulation suite covers deterministic replay, collision and armour, fire rates, sonar interception, duck shielding, damage immunity, complete three-sector progression for both roles, terminal outcomes, boundaries, and a seeded endurance sweep. Browser checks cover actual inputs, pause, both roles, synthetic gamepad input, responsive layouts, offline refresh, and direct file launch. Synthetic controller checks do not establish physical USB compatibility. The results screen now reports shots-to-hits accuracy, total sinks, sonar use and score.
+The simulation suite covers deterministic replay, collision and armour, fire rates, sonar interception, duck shielding, damage immunity, complete three-sector progression for both roles, terminal outcomes, boundaries, and a seeded endurance sweep. Browser checks cover actual inputs, pause, both roles, synthetic gamepad input, responsive layouts, offline refresh, and direct file launch. Synthetic controller checks do not establish physical USB compatibility. Additional tests cover every mode/difficulty/role replay, power expiry and collisions, living-toy ownership and rival wins, per-mode score storage, soundtrack cancellation, and matching browser/Node WAV hashes. The results screen reports accuracy, sinks or toy claims, sonar use, pickups, shield saves and score.
 
 After an update, an older open game tab may keep its existing offline worker until all SubHunt tabs close. Close those tabs and reopen to activate the new cache. Caches are scoped to the game URL; another project on the same GitHub Pages origin is preserved.
 
@@ -81,7 +136,9 @@ Every main push runs verification. A successful push run triggers Pages deployme
 | js/controller.js | Raw/standard controller decoding, profile validation and calibration capture |
 | js/sim.js | Fixed 60 Hz simulation, seeded PRNG, collision, missions, scoring |
 | js/render.js | Canvas artwork, particles and sonar instrument |
-| js/app.js | Browser input, fixed-step clock, UI, Web Audio and local best score |
+| js/app.js | Browser input, fixed-step clock, UI, audio presentation and mode/difficulty records |
+| js/music.js | Original four-lane scores, tick/sample mapping, WAV export and music playback |
+| vendor/vanillajs/ | Pinned integer audio renderer, original source, licence and provenance |
 | sw.js | Scoped offline asset cache |
 | tests/ | Simulation and browser regressions |
 

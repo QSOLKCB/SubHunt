@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 'use strict';
 const PREFIX = 'subhunt:' + self.registration.scope + ':';
-const CACHE = PREFIX + 'v2';
-const FILES = ['./','./index.html','./style.css','./js/sim.js','./js/controller.js','./js/render.js','./js/app.js','./assets/icon.svg'];
+const CACHE = PREFIX + 'v3';
+const FILES = ['./','./index.html','./style.css','./js/sim.js','./js/controller.js','./js/render.js','./js/app.js','./js/music.js','./vendor/vanillajs/audio2d.js','./assets/icon.svg'];
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))));
 self.addEventListener('activate', e => e.waitUntil((async () => {
   for (const key of await caches.keys()) {

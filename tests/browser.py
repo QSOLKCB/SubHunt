@@ -6,6 +6,7 @@ from pathlib import Path
 from threading import Thread
 import os
 from playwright.sync_api import sync_playwright
+from browser_upgrades import checks as upgrade_checks
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACTS = ROOT / "build"
@@ -231,7 +232,7 @@ def result_checks(browser, url):
     page.evaluate("fixtureState.transition=.01")
     page.wait_for_function("subhunt.snapshot().state.mission === 1")
     assert page.evaluate("subhunt.snapshot().state.player.hp") == 4
-    page.evaluate("fixtureState.score=1234;fixtureState.kills=2;fixtureState.stats={shots:4,hits:2,pings:3,damageTaken:1};fixtureState.timeLeft=.001")
+    page.evaluate("fixtureState.score=1234;fixtureState.kills=2;fixtureState.stats={shots:4,hits:2,pings:3,damageTaken:1,pickups:0,blocked:0,toys:0,rivalToys:0};fixtureState.timeLeft=.001")
     page.wait_for_function("subhunt.snapshot().screen === 'result'")
     assert page.get_by_text("The water ran cold.",exact=True).is_visible()
     assert page.locator("#report-accuracy").inner_text() == "50%"
@@ -379,6 +380,7 @@ def run():
         page.get_by_role("button", name="LAUNCH OPERATION").click()
         page.wait_for_function("subhunt.snapshot().state.tick > 3")
         result_checks(browser, url)
+        upgrade_checks(browser, url, ARTIFACTS)
         reduced = browser.new_context(reduced_motion="reduce")
         calm = reduced.new_page()
         calm.goto(url)
@@ -396,7 +398,7 @@ def run():
         calm.wait_for_function("subhunt.snapshot().effects")
         reduced.close()
         assert not errors, errors
-        print("PASS: both roles, keyboard/touch, quick taps, pause, preferences, default/custom USB pads, nine-step calibration/cancel/persistence, reconnect, reports, reduced motion, offline and file://")
+        print("PASS: both roles, keyboard/touch, quick taps, pause, preferences, default/custom USB pads, nine-step calibration/cancel/persistence, reconnect, reports, Pond Panic, powers, difficulty, music pause/mute, WAV hashes, reduced motion, offline and file://")
         browser.close()
 
 if __name__ == "__main__":
