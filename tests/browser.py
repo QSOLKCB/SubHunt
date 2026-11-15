@@ -116,6 +116,10 @@ def run():
             page.wait_for_function("typeof subhunt !== 'undefined'")
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"overflow at {width}"
             assert page.get_by_role("button", name="LAUNCH OPERATION").is_visible()
+            card = page.locator("#start-card").bounding_box()
+            frame = page.locator(".console").bounding_box()
+            assert card["x"] >= frame["x"], f"menu left edge at {width}px"
+            assert card["x"] + card["width"] <= frame["x"] + frame["width"], f"menu right edge at {width}px"
             page.screenshot(path=str(ARTIFACTS / f"menu-{width}.png"), full_page=True)
             page.get_by_role("button", name="LAUNCH OPERATION").click()
             # Both the battle and its controls must fit together without scrolling past instructions.
