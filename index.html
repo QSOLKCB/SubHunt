@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#143e42"><meta name="description" content="A tiny naval battle in a very big bathtub. Play as the ship or the sub in a free, offline-ready arcade game.">
+  <title>SubHunt — The Bathtub Incident</title>
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css">
+  <script defer src="js/sim.js"></script><script defer src="js/render.js"></script><script defer src="js/app.js"></script>
+</head>
+<body>
+  <main>
+    <header class="masthead"><a class="brand" href="./" aria-label="SubHunt home"><span class="brand-mark">≋</span> QSOL–IMC <span class="arcade">/ POCKET ARCADE</span></a><div class="edition"><i></i> BATHTUB THEATRE <span>001</span></div></header>
+    <section class="title-row"><div><div class="eyebrow">THE BATHTUB INCIDENT</div><h1>SUB<span>HUNT</span><b aria-hidden="true">✳</b></h1></div><p>Big trouble.<br><strong>Small ocean.</strong><span>A ship. A sub. Absolutely no room to hide.</span></p></section>
+    <div class="game-layout">
+      <div class="game-column">
+      <section class="console" aria-label="Game">
+        <div class="instrument-bar"><span class="live"><i></i> <span id="status">AWAITING CAPTAIN</span></span><span>HULL <b id="hull">● ● ● ● ●</b></span><span>TIME <b id="timer">01:35</b></span><span class="score">SCORE <b id="score">000000</b></span></div>
+        <div class="viewport" id="viewport">
+          <canvas id="game" width="1000" height="580" aria-label="Side view of a bathtub naval battle. Use the controls described below."></canvas>
+          <div class="scene-label"><span>SECTOR 01 / THE SHALLOW END</span><span>WATER TEMP. 38°C</span></div>
+          <div id="overlay" class="overlay">
+            <div class="start-card" id="start-card"><div class="eyebrow">WELCOME ABOARD, CAPTAIN</div><h2>Choose your<br>side of the tub.</h2><p>Hunt the rival fleet before bath time is over.</p>
+              <div class="roles" role="group" aria-label="Choose your vessel"><button id="role-boat" class="role selected" aria-pressed="true"><span>01 / SURFACE</span><strong>Patrol boat</strong><small>Move & drop depth charges</small></button><button id="role-sub" class="role" aria-pressed="false"><span>02 / SUBMERGED</span><strong>Submarine</strong><small>Dive & launch bubble torpedoes</small></button></div>
+              <button class="launch" id="launch">LAUNCH OPERATION <span>↗</span></button><small class="start-note">3 missions · No downloads · Entirely too many ducks</small>
+            </div>
+            <div class="result-card" id="result-card" hidden><div class="eyebrow" id="result-label">OPERATION REPORT</div><h2 id="result-title">Bath time over.</h2><p id="result-copy"></p><button class="launch" id="again">PLAY AGAIN <span>↗</span></button><button class="text-button" id="change-role">CHANGE VESSEL</button></div>
+            <div class="result-card" id="pause-card" hidden><div class="eyebrow">HOLDING POSITION</div><h2>Stay bubbly.</h2><p>Operation paused. Your tiny ocean can wait.</p><button class="launch" id="resume">RESUME OPERATION <span>↗</span></button><button class="text-button" id="pause-menu">CHANGE VESSEL</button></div>
+          </div>
+          <div id="toast" class="toast" role="status" aria-live="polite"></div>
+        </div>
+        <div class="console-bottom"><span><i></i> <span id="mission">MISSION 01 / RUBBER DUCK RECONNAISSANCE</span></span><div><button id="sound" aria-pressed="false" aria-label="Enable sound">SOUND OFF</button><button id="pause" disabled>PAUSE Ⅱ</button><button id="fullscreen" aria-label="Toggle fullscreen">EXPAND ⤢</button></div></div>
+      </section>
+    <section class="touch-controls" aria-label="Touch controls"><div class="dpad"><button data-control="up" aria-label="Move up">▲</button><button data-control="left" aria-label="Move left">◀</button><button data-control="down" aria-label="Move down">▼</button><button data-control="right" aria-label="Move right">▶</button></div><div class="touch-actions"><button data-control="sonar">PING <small id="sonar-time">READY</small></button><button data-control="fire">FIRE <span>●</span></button></div></section>
+      </div>
+      <aside>
+        <section class="briefing"><div class="section-no">01 — FIELD NOTES</div><h2>Naval warfare.<br>Domestic scale.</h2><p>The bath toys have mutinied. Take command, find the rival fleet, and restore peace to the porcelain.</p><div class="rule"><span>◎</span><p><strong>Ping. Find. Fire.</strong>Sonar reveals hidden subs and clears incoming weapons around you.</p></div><div class="rule"><span>♧</span><p><strong>Mind the ducks.</strong>Rubber ducks block rising torpedoes. Thread your shots through the gaps.</p></div><div class="rule"><span>↻</span><p><strong>Fear the plughole.</strong>The final sector has a drain current. Keep an eye on your depth.</p></div></section>
+        <section class="controls"><div class="section-no">02 — CAPTAIN'S CONTROLS</div><div><span>Steer / dive</span><b><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></b></div><div><span>Fire / drop</span><kbd>SPACE</kbd></div><div><span>Sonar pulse</span><kbd>E</kbd></div><div><span>Pause</span><kbd>ESC</kbd></div><p>Arrow keys also work. Gamepad: D-pad / left stick, A to fire, B to ping, Start to pause.</p><span id="pad-status" class="pad-status">○ GAMEPAD READY TO CONNECT</span></section>
+      </aside>
+    </div>
+    <footer><span>A LITTLE OCEAN. A LOT OF ATTITUDE.</span><span>BUILT BY QSOL–IMC <b>✳</b> <a href="https://github.com/QSOLKCB/SubHunt" target="_blank" rel="noopener">SOURCE ↗</a></span></footer>
+  </main>
+</body></html>
