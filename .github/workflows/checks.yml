@@ -1,0 +1,39 @@
+name: Verify bathtub operations
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  simulation:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript and run deterministic combat tests
+        run: |
+          node --check js/sim.js
+          node --check js/render.js
+          node --check js/app.js
+          node --check sw.js
+          node --test tests/sim.cjs
+  browser:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Install test browser
+        run: uvx --from playwright==1.56.0 playwright install --with-deps chromium
+      - name: Play both vessels and check controls and offline operation
+        run: uv run --no-project --with playwright==1.56.0 python tests/browser.py
+      - name: Preserve browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bathtub-browser-evidence
+          path: build/
+          if-no-files-found: ignore
