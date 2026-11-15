@@ -13,6 +13,7 @@
   let sound = false, effects = !motionPreference.matches, effectsOverride = false, audio = null, highScore = 0;
   let queuedFire = false, queuedSonar = false, lastWarnSecond = -1;
   let padWasConnected = false, controllerUsed = false, requirePadRelease = false;
+  let selectedPadKey = null;
   let previousPad = {fire:false, sonar:false, restart:false, pause:false, menu:false, direction:0};
   let profiles = [], activeProfile = Controller.freshDefault(), profileIdentity = '', activePad = null, calibration = null;
   try {
@@ -166,6 +167,7 @@
     if (screen === 'playing' && !paused) lastWarnSecond = seconds;
   }
   function identify(pad) { return pad.id + ' / ' + (pad.mapping || 'raw'); }
+  function deviceKey(pad) { return pad.index + ':' + identify(pad); }
   function useProfile(pad) {
     const id = identify(pad);
     if (id !== profileIdentity) {
@@ -178,8 +180,8 @@
   function openSetup() {
     clearInput();
     if (screen === 'playing') { paused = true; accumulator = 0; }
-    calibration = {index:0, waiting:true, baseline:activePad ? Array.from(activePad.axes) : null,
-      id:activePad ? identify(activePad) : null, draft:{version:1, buttons:{}, directions:{}}, cancelTime:0};
+    calibration = {index:0, waiting:true, baseline:null,
+      device:activePad ? deviceKey(activePad) : null, draft:{version:1, buttons:{}, directions:{}}, cancelTime:0};
     overlay('controller-card'); hud(); setupLabel();
     $('controller-cancel').focus();
     document.querySelector('.console').scrollIntoView({block:'nearest'});
@@ -189,7 +191,9 @@
     const step = Controller.STEPS[calibration.index];
     $('setup-progress').textContent = 'USB CONTROLLER / ' + Math.min(9, calibration.index + 1) + ' OF 9';
     $('setup-title').textContent = step ? 'Press ' + step.label + '.' : 'Release all controls.';
-    $('setup-note').textContent = note || (calibration.waiting ? 'Let go of every button and the D-pad first.' : 'Press once, then release. Your mapping is saved only after all nine inputs.');
+    $('setup-note').textContent = note || (calibration.waiting ? 'Let go of every button and the D-pad first.' : !calibration.baseline ?
+      'Release the D-pad and sticks, then press A to confirm centre and assign fire.' :
+      'Press once, then release. Your mapping is saved only after all nine inputs.');
   }
   function closeSetup() {
     calibration = null; clearInput(); requirePadRelease = true;
@@ -203,13 +207,15 @@
     catch { sessionProfiles.add(profileIdentity); return false; }
   }
   function calibrate(pad, dt) {
-    if (!calibration.id) { calibration.id = identify(pad); calibration.baseline = Array.from(pad.axes); }
-    if (identify(pad) !== calibration.id) { setupLabel('Reconnect the controller you started with.'); return; }
+    if (!calibration.device) calibration.device = deviceKey(pad);
+    if (deviceKey(pad) !== calibration.device) { setupLabel('Reconnect the controller you started with.'); return; }
     const held = Array.from(pad.buttons).filter(b => b.pressed).length;
     calibration.cancelTime = held >= 2 ? calibration.cancelTime + dt : 0;
     if (calibration.cancelTime > .8) { closeSetup(); return; }
     if (calibration.waiting) {
-      if (!Controller.released(pad, calibration.baseline)) return;
+      // No axis baseline exists until the user confirms centre with the first
+      // face-button press. In particular, do not wait for axes held at entry.
+      if (calibration.baseline ? !Controller.released(pad, calibration.baseline) : held > 0) return;
       calibration.waiting = false;
       if (calibration.index === Controller.STEPS.length) {
         if (Controller.valid(calibration.draft)) {
@@ -219,11 +225,12 @@
       } else setupLabel();
       return;
     }
-    const step = Controller.STEPS[calibration.index], binding = Controller.capture(pad, calibration.baseline);
+    const step = Controller.STEPS[calibration.index], binding = Controller.capture(pad, calibration.baseline || Array.from(pad.axes));
     if (!binding || (step.type === 'button' && binding.kind !== 'button')) return;
     const usedButtons = Object.values(calibration.draft.buttons).concat(Object.values(calibration.draft.directions).filter(b => b.kind === 'button').map(b => b.index));
     const duplicate = binding.kind === 'button' ? usedButtons.includes(binding.index) : Object.values(calibration.draft.directions).some(b => b.kind === 'axis' && b.index === binding.index && Math.abs(b.value-binding.value) < .1);
     if (duplicate) { setupLabel('That input is already assigned. Release it and choose another.'); return; }
+    if (!calibration.baseline) calibration.baseline = Array.from(pad.axes);
     if (step.type === 'button') calibration.draft.buttons[step.key] = binding.index;
     else calibration.draft.directions[step.key] = binding;
     calibration.index++; calibration.waiting = true; setupLabel();
@@ -238,10 +245,18 @@
       if (calibration) setupLabel('Connect your USB pad, then press a button so Chrome can detect it.');
       if (padWasConnected && controllerUsed && screen === 'playing' && !paused) { pause(true); toast('Controller disconnected. Reconnect or resume with keyboard / touch.'); }
       if (padWasConnected) requirePadRelease = true;
-      padWasConnected = false; controllerUsed = false;
+      padWasConnected = false; controllerUsed = false; selectedPadKey = null;
       previousPad = {fire:false, sonar:false, restart:false, pause:false, menu:false, direction:0};
       return neutral();
     }
+    const nextPadKey = deviceKey(pad);
+    if (selectedPadKey !== null && selectedPadKey !== nextPadKey) {
+      requirePadRelease = true; controllerUsed = false; clearInput();
+      previousPad = {fire:false, sonar:false, restart:false, pause:false, menu:false, direction:0};
+      if (screen === 'playing' && !paused) pause(true);
+      if (!calibration) toast('Controller changed. Release all controls, then resume.');
+    }
+    selectedPadKey = nextPadKey;
     padWasConnected = true; useProfile(pad);
     if (calibration) { calibrate(pad, dt); return neutral(); }
     const controls = Controller.read(pad, activeProfile);
@@ -281,7 +296,7 @@
     if (calibration) { if (e.code === 'Escape') closeSetup(); return; }
     if (e.code === 'Escape' || e.code === 'KeyP') { if (!e.repeat) pause(); return; }
     if (e.code === 'KeyR' && (paused || screen === 'result')) { if (!e.repeat) launch(); return; }
-    if (e.code === 'Space' && e.target.closest?.('button')) return;
+    if (e.code === 'Space' && e.target.closest?.('button') && !(screen === 'playing' && !paused)) return;
     if (screen === 'playing' && !paused && gameplayKeys.includes(e.code)) {
       e.preventDefault(); keys.add(e.code);
       if (e.code === 'Space') queuedFire = true;

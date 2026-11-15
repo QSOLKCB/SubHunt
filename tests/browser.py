@@ -25,13 +25,78 @@ def serve():
         server.shutdown()
         server.server_close()
 
+def toolbar_checks(page):
+    for control in ['sound', 'effects']:
+        page.locator('#' + control).click()
+        assert page.evaluate('document.activeElement.id') == control
+        settings = page.evaluate('({sound:subhunt.snapshot().sound,effects:subhunt.snapshot().effects})')
+        page.wait_for_function('subhunt.snapshot().state.player.cooldown === 0')
+        shots = page.evaluate('subhunt.snapshot().state.stats.shots')
+        page.keyboard.press('Space')
+        page.wait_for_function(f'subhunt.snapshot().state.stats.shots > {shots}')
+        assert page.evaluate('({sound:subhunt.snapshot().sound,effects:subhunt.snapshot().effects})') == settings
+        page.locator('#' + control).click()  # Restore the preference for the rest of the suite.
+    page.screenshot(path=str(ARTIFACTS / 'toolbar-space-fire.png'), full_page=True)
+
+
+def handoff_checks(page):
+    for identical_ids in [False, True]:
+        page.reload()
+        page.evaluate('''same => {
+          const make=(id,index)=>({id,index,mapping:'',connected:true,axes:[0,0],buttons:Array.from({length:16},()=>({pressed:false}))});
+          window.testPads=[make('USB SNES primary',0),make(same?'USB SNES primary':'USB SNES backup',1)];
+          testPads[1].buttons[2].pressed=true;
+          navigator.getGamepads=()=>testPads;
+        }''', identical_ids)
+        page.get_by_role('button', name='LAUNCH OPERATION').click()
+        page.wait_for_function('subhunt.snapshot().state.tick > 60')
+        page.evaluate('testPads[0].buttons[0].pressed=true')
+        page.wait_for_function('subhunt.snapshot().state.stats.shots > 0')
+        page.evaluate('testPads[0].buttons[0].pressed=false')
+        page.keyboard.press('Escape')
+        before = page.evaluate('subhunt.snapshot().state')
+        page.evaluate('testPads[0].connected=false')
+        page.wait_for_timeout(160)
+        assert page.evaluate('subhunt.snapshot().paused'), 'held backup X must not restart'
+        assert page.evaluate('subhunt.snapshot().state') == before, 'handoff must preserve the paused campaign'
+        # Releasing the button alone is insufficient if its D-pad remains held.
+        page.evaluate('testPads[1].buttons[2].pressed=false;testPads[1].axes[0]=1')
+        page.wait_for_timeout(80)
+        page.evaluate('testPads[1].buttons[0].pressed=true')
+        page.wait_for_timeout(80)
+        assert page.evaluate('subhunt.snapshot().paused')
+        assert page.evaluate('subhunt.snapshot().state') == before
+        page.evaluate('testPads[1].buttons[0].pressed=false;testPads[1].axes[0]=0')
+        page.wait_for_timeout(80)
+        page.evaluate('testPads[1].buttons[0].pressed=true')
+        page.wait_for_function('!subhunt.snapshot().paused')
+        page.evaluate('testPads[1].buttons[0].pressed=false')
+        page.wait_for_function(f'subhunt.snapshot().state.tick > {before["tick"]}')
+        # Also cover a direct switch while combat is active, with Start held.
+        page.evaluate('testPads[0].connected=true;testPads[0].buttons[9].pressed=true')
+        page.wait_for_function('subhunt.snapshot().paused')
+        tick = page.evaluate('subhunt.snapshot().state.tick')
+        page.wait_for_timeout(160)
+        assert page.evaluate('subhunt.snapshot().state.tick') == tick
+        assert page.evaluate('subhunt.snapshot().paused')
+        page.evaluate('testPads[0].buttons[9].pressed=false')
+        page.wait_for_timeout(80)
+        page.evaluate('testPads[0].buttons[9].pressed=true')
+        page.wait_for_function('!subhunt.snapshot().paused')
+        page.evaluate('testPads[0].buttons[9].pressed=false')
+    page.screenshot(path=str(ARTIFACTS / 'controller-handoff.png'), full_page=True)
+    page.evaluate('navigator.getGamepads=()=>[]')
+
+
 def controller_checks(page):
     # Generic Linux/Chrome USB layout: swapped face buttons and axes 2/3.
     page.evaluate("""() => {
-      window.testPad = {id:'Generic USB SNES TEST',mapping:'',connected:true,axes:[0,0,0,0],buttons:Array.from({length:16},()=>({pressed:false}))};
+      window.testPad = {id:'Generic USB SNES TEST',index:0,mapping:'',connected:true,axes:[0,0,-1,0],buttons:Array.from({length:16},()=>({pressed:false}))};
       navigator.getGamepads=()=>[testPad];
     }""")
     page.get_by_role("button", name="CONTROLLER SETUP", exact=True).click()
+    # Opening setup with an unconfigured axis held must not make it the baseline.
+    page.evaluate('testPad.axes[2]=0')
     page.wait_for_function("subhunt.snapshot().calibration && !subhunt.snapshot().calibration.waiting")
     bindings = [("button",3),("button",0),("button",7),("button",6),("button",1),("axis",2,-1),("axis",2,1),("axis",3,-1),("axis",3,1)]
     for i, binding in enumerate(bindings):
@@ -50,7 +115,11 @@ def controller_checks(page):
     assert page.evaluate("subhunt.snapshot().controllerProfile.directions.left.index") == 2
     saved = page.evaluate("localStorage.getItem('subhunt-controllers-v1')")
     # A partial or cancelled setup must preserve the previous saved profile.
-    page.get_by_role("button", name="CONTROLLER SETUP", exact=True).click()
+    page.wait_for_timeout(80)
+    # The controller-only entry path must also tolerate Select plus a held D-pad.
+    page.evaluate('testPad.axes[2]=1;testPad.buttons[6].pressed=true')
+    page.wait_for_function('subhunt.snapshot().calibration !== null')
+    page.evaluate('testPad.axes[2]=0;testPad.buttons[6].pressed=false')
     page.wait_for_function("!subhunt.snapshot().calibration.waiting")
     page.evaluate("testPad.buttons[4].pressed=true")
     page.wait_for_function("subhunt.snapshot().calibration.step === 1")
@@ -119,10 +188,24 @@ def controller_checks(page):
     page.reload()
     page.wait_for_function("typeof subhunt !== 'undefined'")
     page.evaluate("""() => {
-      window.testPad={id:'Generic USB SNES TEST',mapping:'',connected:true,axes:[0,0,0,0],buttons:Array.from({length:16},()=>({pressed:false}))};
+      window.testPad={id:'Generic USB SNES TEST',index:0,mapping:'',connected:true,axes:[0,0,0,0],buttons:Array.from({length:16},()=>({pressed:false}))};
       navigator.getGamepads=()=>[testPad];
     }""")
     page.wait_for_function("subhunt.snapshot().controllerProfile.buttons.fire === 3")
+    # A raw hat can have a nonzero neutral value; the first face-button press
+    # confirms that released value rather than guessing that every axis is zero.
+    page.evaluate('''() => {
+      window.testPad={id:'USB hat baseline',index:0,mapping:'',connected:true,axes:[-1],buttons:Array.from({length:16},()=>({pressed:false}))};
+    }''')
+    page.get_by_role('button', name='CONTROLLER SETUP', exact=True).click()
+    page.evaluate('testPad.axes[0]=3')
+    page.wait_for_function('!subhunt.snapshot().calibration.waiting')
+    page.evaluate('testPad.buttons[0].pressed=true')
+    page.wait_for_function('subhunt.snapshot().calibration.step === 1')
+    page.evaluate('testPad.buttons[0].pressed=false')
+    page.wait_for_function('!subhunt.snapshot().calibration.waiting')
+    page.screenshot(path=str(ARTIFACTS / 'calibration-released-baseline.png'), full_page=True)
+    page.keyboard.press('Escape')
     page.evaluate("navigator.getGamepads=()=>[]")
 
 
@@ -173,7 +256,8 @@ def run():
         page.goto(url)
         page.wait_for_function("typeof window.subhunt !== 'undefined'")
         page.screenshot(path=str(ARTIFACTS / "desktop-menu.png"), full_page=True)
-        page.get_by_role("button", name="LAUNCH OPERATION").click()
+        page.get_by_role("button", name="LAUNCH OPERATION").focus()
+        page.keyboard.press('Space')  # Menus retain native focused-button activation.
         page.wait_for_function("subhunt.snapshot().state.tick > 3")
         x = page.evaluate("subhunt.snapshot().state.player.x")
         page.keyboard.down("ArrowRight")
@@ -191,11 +275,13 @@ def run():
         }""")
         page.wait_for_function("subhunt.snapshot().state.player.sonar > 0")
         page.screenshot(path=str(ARTIFACTS / "desktop-battle.png"), full_page=True)
+        toolbar_checks(page)
         page.keyboard.press("Escape")
         tick = page.evaluate("subhunt.snapshot().state.tick")
         page.wait_for_timeout(250)
         assert page.evaluate("subhunt.snapshot().state.tick") == tick
-        page.get_by_role("button", name="RESUME OPERATION").click()
+        page.get_by_role("button", name="RESUME OPERATION").focus()
+        page.keyboard.press('Space')
         page.wait_for_function(f"subhunt.snapshot().state.tick > {tick}")
         page.keyboard.press("Escape")
         page.get_by_role("button", name="CHANGE VESSEL", exact=True).click()
@@ -239,6 +325,7 @@ def run():
         page.wait_for_function("subhunt.snapshot().paused")
         page.get_by_role("button", name="CHANGE VESSEL", exact=True).click()
         controller_checks(page)
+        handoff_checks(page)
         # Cache install, then offline navigation under the same origin.
         page.evaluate("navigator.serviceWorker.ready")
         page.reload()

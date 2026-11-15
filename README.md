@@ -40,7 +40,7 @@ In the vessel menu, use gamepad left/right to choose a role, A or Start to launc
 ## Generic USB SNES controllers on Linux Chrome
 
 1. Connect the controller before playing. Open the game over HTTPS or localhost in Chrome, then press a controller button so the browser exposes it.
-2. Select **CONTROLLER SETUP** (or press Select at the vessel menu). Release the pad, then follow nine prompts: A/fire, B/sonar, Start/pause, Select/menu, X/restart, left, right, up and down.
+2. Select **CONTROLLER SETUP** (or press Select at the vessel menu). Release the pad; the first A/fire press confirms the centred D-pad/stick position. Then follow the remaining prompts: B/sonar, Start/pause, Select/menu, X/restart, left, right, up and down.
 3. Release each control before the next prompt. Mappings are saved only when all nine inputs are complete. Each controller ID and browser mapping has its own saved profile. Cancel leaves the old profile intact; USE DEFAULT MAPPING removes that controller's custom profile.
 4. The D-pad may report axes or buttons. Setup learns either, including axes outside the first pair and a single-axis hat with four cardinal values. Analog drift has a dead zone. The default profile also accepts standard D-pad buttons 12–15.
 
