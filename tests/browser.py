@@ -126,12 +126,14 @@ def run():
             if width <= 768:
                 assert bounds["y"] + bounds["height"] <= height
                 assert battle["y"] >= 0
+            else:
+                page.get_by_role("button", name="Move right", exact=True).scroll_into_view_if_needed()
             bounds = page.get_by_role("button", name="Move right", exact=True).bounding_box()
             page.mouse.move(bounds["x"] + bounds["width"] / 2, bounds["y"] + bounds["height"] / 2)
             page.mouse.down()
             page.wait_for_timeout(250)
             page.mouse.up()
-            assert page.evaluate("subhunt.snapshot().state.player.x") > 520
+            assert page.evaluate("subhunt.snapshot().state.player.x") > 520, f"touch movement at {width}px"
             page.screenshot(path=str(ARTIFACTS / f"battle-{width}.png"), full_page=True)
         # Direct file launch works without module fetching or a web server.
         page.goto((ROOT / "index.html").as_uri())
