@@ -35,7 +35,11 @@ jobs:
         run: python -m pip install uv==0.9.5
       - name: Install test browser
         run: uvx --from playwright==1.56.0 playwright install --with-deps chromium
-      - name: Play both vessels and check controls and offline operation
+      - name: Stage the Pages package
+        run: sh scripts/stage-pages.sh
+      - name: Play both vessels from the Pages package and check controls and offline operation
+        env:
+          SUBHUNT_WEB_ROOT: public
         run: uv run --no-project --with playwright==1.56.0 python tests/browser.py
       - name: Preserve browser screenshots
         if: always()

@@ -18,10 +18,10 @@ function worker(initial={}){
 }
 async function lifecycle(w,type){let task;w.events[type]({waitUntil:p=>task=p});await task;}
 test('offline install caches the controller module and activation preserves other projects',async()=>{
-  const w=worker({['subhunt:'+scope+':v1']:[scope+'index.html'],'other-project':['https://example.test/other/index.html'],'subhunt:https://example.test/other/:v1':['https://example.test/other/index.html'],'subhunt-bathtub-v1':[scope+'index.html']});
+  const w=worker({['subhunt:'+scope+':v1']:[scope+'index.html'],['subhunt:'+scope+':v3']:[scope+'index.html'],'other-project':['https://example.test/other/index.html'],'subhunt:https://example.test/other/:v1':['https://example.test/other/index.html'],'subhunt-bathtub-v1':[scope+'index.html']});
   await lifecycle(w,'install');await lifecycle(w,'activate');
-  for(const asset of ['js/controller.js','js/music.js','vendor/vanillajs/audio2d.js'])assert.ok(w.stores.get('subhunt:'+scope+':v3').has(scope+asset));
-  assert.ok(!w.stores.has('subhunt:'+scope+':v1'));assert.ok(!w.stores.has('subhunt-bathtub-v1'));
+  for(const asset of ['js/controller.js','js/music.js','vendor/vanillajs/audio2d.js'])assert.ok(w.stores.get('subhunt:'+scope+':v4').has(scope+asset));
+  assert.ok(!w.stores.has('subhunt:'+scope+':v1'));assert.ok(!w.stores.has('subhunt:'+scope+':v3'));assert.ok(!w.stores.has('subhunt-bathtub-v1'));
   assert.ok(w.stores.has('other-project'));assert.ok(w.stores.has('subhunt:https://example.test/other/:v1'));assert.ok(w.claimed());
 });
 test('legacy cache is not deleted if another project owns any entries',async()=>{
@@ -29,7 +29,7 @@ test('legacy cache is not deleted if another project owns any entries',async()=>
 });
 test('fetch serves only named GET assets from this game cache',async()=>{
   const w=worker({'other-project':[scope+'js/app.js']});await lifecycle(w,'install');
-  let response;w.events.fetch({request:{method:'GET',url:scope+'js/app.js'},respondWith:p=>response=p});assert.equal((await response).body,'subhunt:'+scope+':v3');
+  let response;w.events.fetch({request:{method:'GET',url:scope+'js/app.js'},respondWith:p=>response=p});assert.equal((await response).body,'subhunt:'+scope+':v4');
   for(const request of [{method:'POST',url:scope+'index.html'},{method:'GET',url:'https://example.test/other/index.html'},{method:'GET',url:scope+'README.md'}]){
     let intercepted=false;w.events.fetch({request,respondWith:()=>intercepted=true});assert.equal(intercepted,false);
   }
